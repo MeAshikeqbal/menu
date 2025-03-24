@@ -61,6 +61,60 @@ export const actions: Actions = {
     }
   },
   
+  edit: async ({ request }) => {
+    const formData = await request.formData();
+    
+    const id = formData.get('id') as string;
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const priceStr = formData.get('price') as string;
+    const category = formData.get('category') as string;
+    const pageNumberStr = formData.get('pageNumber') as string;
+    const imageFile = formData.get('image') as File | null;
+    
+    if (!id || !name || !priceStr || !category || !pageNumberStr) {
+      return fail(400, { error: 'Missing required fields' });
+    }
+    
+    const price = parseFloat(priceStr);
+    const pageNumber = parseInt(pageNumberStr);
+    
+    if (isNaN(price) || isNaN(pageNumber)) {
+      return fail(400, { error: 'Invalid price or page number' });
+    }
+    
+    try {
+      // First get the current item to check its image
+      const currentItem = await db.select().from(menuItems).where(eq(menuItems.id, id)).limit(1);
+      
+      if (currentItem.length === 0) {
+        return fail(404, { error: 'Item not found' });
+      }
+      
+      // Upload new image if provided, otherwise keep the existing one
+      let image = currentItem[0].image;
+      if (imageFile && imageFile.size > 0) {
+        image = await uploadImage(imageFile);
+      }
+      
+      await db.update(menuItems)
+        .set({
+          name,
+          description,
+          price,
+          category,
+          image,
+          pageNumber
+        })
+        .where(eq(menuItems.id, id));
+        
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating menu item:', error);
+      return fail(500, { error: 'Failed to update menu item' });
+    }
+  },
+  
   delete: async ({ request }) => {
     const formData = await request.formData();
     const id = formData.get('id') as string;
