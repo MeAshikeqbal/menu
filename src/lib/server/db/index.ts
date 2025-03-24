@@ -2,9 +2,13 @@ import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
 import { menuItems } from './schema';
 import { eq, max } from 'drizzle-orm';
+import { dev } from '$app/environment';
+import { env } from '$env/dynamic/private';
 
+// Create a database client that works in both development and production
 const client = createClient({
-  url: process.env.DATABASE_URL || 'file:./local.db'
+  url: dev ? 'file:local.db' : env.DATABASE_URL,
+  authToken: dev ? undefined : env.DATABASE_AUTH_TOKEN
 });
 
 export const db = drizzle(client);
