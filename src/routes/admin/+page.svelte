@@ -79,6 +79,26 @@
           {showAddForm ? 'Cancel' : '+ Add Item'}
         </button>
       </div>
+      <div class="flex gap-3">
+        <a 
+          href="/" 
+          class="px-4 py-2 border border-stone-300 text-stone-700 rounded-md shadow-sm hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 text-sm transition-colors"
+        >
+          View Menu
+        </a>
+        <a 
+          href="/logout" 
+          class="px-4 py-2 border border-stone-300 text-stone-700 rounded-md shadow-sm hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 text-sm transition-colors"
+        >
+          Logout
+        </a>
+        <button 
+          on:click={toggleAddForm}
+          class="px-4 py-2 bg-stone-800 text-white rounded-md shadow-sm hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 text-sm transition-colors"
+        >
+          {showAddForm ? 'Cancel' : '+ Add Item'}
+        </button>
+      </div>
     </div>
     
     <!-- Success/Error Messages -->
