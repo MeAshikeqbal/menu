@@ -18,8 +18,6 @@ export async function getMenuItemsByPage(pageNumber: number) {
 }
 
 export async function getTotalPages() {
-  // This is where the error was happening
-  // We need to use the max function correctly
   const result = await db.select({
     maxPage: max(menuItems.pageNumber)
   }).from(menuItems);
