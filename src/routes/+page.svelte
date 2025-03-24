@@ -128,7 +128,7 @@
                       
                       <!-- Price -->
                       <div class="ml-3 text-base font-medium text-stone-800 flex-shrink-0 pl-2 {item.outOfStock ? 'line-through opacity-70' : ''}">
-                        ${item.price.toFixed(2)}
+                        ₹{item.price.toFixed(2)}
                       </div>
                     </div>
                   {/each}

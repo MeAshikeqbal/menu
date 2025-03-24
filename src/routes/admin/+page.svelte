@@ -179,7 +179,7 @@
               <label
                 for="price"
                 class="block text-sm font-medium text-stone-700 mb-1"
-                >Price ($)</label
+                >Price (₹)</label
               >
               <input
                 type="number"
@@ -346,7 +346,7 @@
               <label
                 for="edit-price"
                 class="block text-sm font-medium text-stone-700 mb-1"
-                >Price ($)</label
+                >Price (₹)</label
               >
               <input
                 type="number"
@@ -597,7 +597,7 @@
                   <td
                     class="px-6 py-4 text-sm text-stone-500 {item.outOfStock
                       ? 'line-through opacity-70'
-                      : ''}">${item.price.toFixed(2)}</td
+                      : ''}">₹{item.price.toFixed(2)}</td
                   >
                   <td class="px-6 py-4">
                     <span
