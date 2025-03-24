@@ -5,7 +5,7 @@
   export let data: PageData;
   export let form;
 
-  let categories = ["Starters", "Main", "Sides", "Desserts"];
+  let categories = ["Starters", "Main", "Sides", "Desserts", "Drinks", "Hot Beverages"];
   let imagePreview: string | null = null;
   let showAddForm = false;
   let showEditForm = false;
