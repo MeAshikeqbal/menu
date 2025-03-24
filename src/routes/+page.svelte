@@ -75,9 +75,7 @@
               <!-- Page Title -->
               <div class="mb-6 pb-2 border-b border-stone-100">
                 <h2 class="text-lg font-serif text-stone-800">
-                  {currentPage === 1 ? 'Starters & Appetizers' : 
-                   currentPage === 2 ? 'Main Courses' : 
-                   currentPage === 3 ? 'Desserts & Beverages' : `Page ${currentPage}`}
+                  {`Page ${currentPage}`}
                 </h2>
               </div>
               
@@ -99,30 +97,37 @@
                           <img 
                             src={item.image || "/placeholder.svg"} 
                             alt={item.name} 
-                            class="w-full h-full object-cover"
+                            class="w-full h-full object-cover {item.outOfStock ? 'opacity-50' : ''}"
                           />
                         {:else}
-                          <div class="w-full h-full flex items-center justify-center text-xl">
+                          <div class="w-full h-full flex items-center justify-center text-xl {item.outOfStock ? 'opacity-50' : ''}">
                             {getCategoryEmoji(item.category)}
                           </div>
                         {/if}
                       </div>
                       
                       <!-- Description -->
-                      <div class="flex-1">
+                      <div class="flex-1 {item.outOfStock ? 'opacity-70' : ''}">
                         <div class="flex items-center flex-wrap">
-                          <h3 class="text-base font-medium text-stone-800">{item.name}</h3>
+                          <h3 class="text-base font-medium text-stone-800 {item.outOfStock ? 'line-through' : ''}">
+                            {item.name}
+                          </h3>
+                          <span class="ml-2 px-2 py-0.5 text-xs rounded-full bg-stone-100 text-stone-500">
+                            {item.category}
+                          </span>
                           {#if item.outOfStock}
-                            <span class="ml-2 px-2 py-0.5 text-xs rounded-full bg-stone-100 text-stone-500">
+                            <span class="ml-2 px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-600 font-medium">
                               Sold Out
                             </span>
                           {/if}
                         </div>
-                        <p class="text-sm text-stone-500 mt-1 line-clamp-2">{item.description}</p>
+                        <p class="text-sm text-stone-500 mt-1 line-clamp-2 {item.outOfStock ? 'line-through' : ''}">
+                          {item.description}
+                        </p>
                       </div>
                       
                       <!-- Price -->
-                      <div class="ml-3 text-base font-medium text-stone-800 flex-shrink-0 pl-2">
+                      <div class="ml-3 text-base font-medium text-stone-800 flex-shrink-0 pl-2 {item.outOfStock ? 'line-through opacity-70' : ''}">
                         ${item.price.toFixed(2)}
                       </div>
                     </div>
@@ -141,7 +146,8 @@
         <div class="absolute bottom-4 left-0 right-0 text-center">
           <div class="inline-flex items-center gap-4">
             <button 
-              class="text-stone-400 hover:text-stone-600 disabled:opacity-30 disabled:cursor-not-allowed"
+              type="button"
+              class="text-stone-400 hover:text-stone-600 hover:bg-stone-100 p-2 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               on:click={() => flipPage('prev')}
               disabled={currentPage === 1 || isFlipping}
               aria-label="Previous page"
@@ -156,7 +162,8 @@
             </span>
             
             <button 
-              class="text-stone-400 hover:text-stone-600 disabled:cursor-not-allowed"
+              type="button"
+              class="text-stone-400 hover:text-stone-600 hover:bg-stone-100 p-2 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               on:click={() => flipPage('next')}
               disabled={currentPage === totalPages || isFlipping}
               aria-label="Next page"
@@ -168,14 +175,6 @@
           </div>
         </div>
         
-        <!-- Page Turn Animation Overlay -->
-        {#if isFlipping}
-          <div 
-            class="absolute inset-0 bg-black bg-opacity-5 z-10"
-            in:fade={{ duration: 200 }}
-            out:fade={{ duration: 200 }}
-          ></div>
-        {/if}
       </div>
       
       <!-- Book Footer -->
