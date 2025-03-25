@@ -3,6 +3,7 @@
   import { fade, fly, scale } from 'svelte/transition';
   import { cubicOut, elasticOut } from 'svelte/easing';
   import type { PageData } from './$types';
+  import ItemModal from './ItemModal.svelte';
   
   export let data: PageData;
   
@@ -17,6 +18,15 @@
   let activeCategory: string | null = null;
   let allCategories: string[] = [];
   let isSearching = false;
+  
+  // Modal state
+  let selectedItem: any = null;
+  let isModalOpen = false;
+  
+  function openItemModal(item: any) {
+    selectedItem = item;
+    isModalOpen = true;
+  }
   
   onMount(async () => {
     totalPages = data.totalPages;
@@ -112,7 +122,7 @@
       <!-- Book Header -->
       <div class="border-b border-stone-100 p-4 text-center bg-gradient-to-r from-amber-50 to-stone-50">
         <h1 class="text-3xl font-serif text-stone-800">Time Pass Cafe</h1>
-        <p class="text-sm text-stone-500 mt-1">Est. 2024</p>
+        <p class="text-sm text-stone-500 mt-1">Since 2024</p>
         
         <!-- Search and Filter -->
         <div class="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2">
@@ -178,13 +188,18 @@
                 {#if filteredItems.length > 0}
                   {#each filteredItems as item, i}
                     <div 
-                      class="flex justify-between items-start p-3 rounded-md hover:bg-stone-50 transition-colors"
+                      class="flex justify-between items-start p-3 rounded-md hover:bg-stone-50 transition-colors cursor-pointer"
                       in:scale={{ 
                         duration: 300, 
                         delay: i * 50,
                         easing: elasticOut,
                         start: 0.95
                       }}
+                      on:click={() => openItemModal(item)}
+                      on:keydown={(e) => e.key === 'Enter' && openItemModal(item)}
+                      tabindex="0"
+                      role="button"
+                      aria-label="View details for {item.name}"
                     >
                       <!-- Image (small, shown on all screen sizes) -->
                       <div class="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden mr-3 bg-stone-100 shadow-sm">
@@ -253,12 +268,17 @@
                   {#if menuItemsByPage[currentPage] && menuItemsByPage[currentPage].length > 0}
                     {#each menuItemsByPage[currentPage] as item, i}
                       <div 
-                        class="flex justify-between items-start p-3 rounded-md hover:bg-stone-50 transition-colors"
+                        class="flex justify-between items-start p-3 rounded-md hover:bg-stone-50 transition-colors cursor-pointer"
                         in:fade={{ 
                           duration: 300, 
                           delay: i * 100,
                           easing: cubicOut
                         }}
+                        on:click={() => openItemModal(item)}
+                        on:keydown={(e) => e.key === 'Enter' && openItemModal(item)}
+                        tabindex="0"
+                        role="button"
+                        aria-label="View details for {item.name}"
                       >
                         <!-- Image (small, shown on all screen sizes) -->
                         <div class="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden mr-3 bg-stone-100 shadow-sm">
@@ -360,11 +380,24 @@
     <footer class="mt-8 text-center text-stone-500 text-xs">
       <p>© {new Date().getFullYear()} Time Pass Cafe. All rights reserved.</p>
       <div class="mt-2 flex justify-center space-x-4">
-        <a href="https://www.instagram.com/timepasscafe.in" class="hover:text-amber-600 transition-colors">Instagram</a>
+        <a 
+          href="https://www.instagram.com/timepasscafe.in" 
+          class="hover:text-amber-600 transition-colors flex items-center"
+          aria-label="Follow us on Instagram"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+        </a>
       </div>
     </footer>
   </div>
 </div>
+
+<!-- Item Modal -->
+<ItemModal bind:isOpen={isModalOpen} bind:item={selectedItem} />
 
 <style>
   /* Add subtle paper texture */
