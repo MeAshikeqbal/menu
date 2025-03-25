@@ -4,6 +4,7 @@
   import { cubicOut, elasticOut } from 'svelte/easing';
   import type { PageData } from './$types';
   import ItemModal from './ItemModal.svelte';
+  import InstallPrompt from './InstallPrompt.svelte';
   
   export let data: PageData;
   
@@ -398,6 +399,10 @@
 
 <!-- Item Modal -->
 <ItemModal bind:isOpen={isModalOpen} bind:item={selectedItem} />
+
+<!-- Install Prompt -->
+<InstallPrompt />
+
 
 <style>
   /* Add subtle paper texture */
