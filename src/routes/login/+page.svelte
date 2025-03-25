@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
   import { page } from '$app/stores';
   
   export let data;
@@ -12,16 +11,10 @@
   // Get the redirect URL from the query string
   $: redirectTo = $page.url.searchParams.get('redirectTo') || '/admin';
   
-  function handleEnhance() {
-    return ({ result, update }: { result: { type: string }; update: () => void }) => {
-      isSubmitting = false;
-      
-      if (result.type === 'failure') {
-        loginAttempts++;
-      }
-      
-      update();
-    };
+  // Simple function to handle form submission
+  function handleSubmit() {
+    isSubmitting = true;
+    // The form will submit normally
   }
 </script>
 
@@ -35,7 +28,12 @@
     </div>
     
     <div class="mt-8 bg-white py-8 px-4 shadow-md sm:rounded-lg sm:px-10 border border-stone-200">
-      <form method="POST" use:enhance={handleEnhance} class="space-y-6">
+      <!-- Use a regular form without enhance -->
+      <form 
+        method="POST" 
+        on:submit={handleSubmit}
+        class="space-y-6"
+      >
         <!-- CSRF token from the page data -->
         <input type="hidden" name="csrf" value={data.csrf} />
         <input type="hidden" name="redirectTo" value={redirectTo} />
@@ -99,7 +97,6 @@
             type="submit"
             disabled={loginAttempts >= 5 || isSubmitting}
             class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-stone-800 hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            on:click={() => isSubmitting = true}
           >
             {#if isSubmitting}
               <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
