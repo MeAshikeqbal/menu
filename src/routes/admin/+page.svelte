@@ -7,10 +7,12 @@
 
   let categories = ["Starters", "Main", "Sides", "Desserts", "Drinks", "Hot Beverages"];
   let imagePreview: string | null = null;
-  let showAddForm = false;
-  let showEditForm = false;
+  let showAddModal = false;
+  let showEditModal = false;
   let editingItem: any = null;
   let confirmDeleteId: string | null = null;
+  let searchTerm = "";
+  let filterCategory = "";
 
   function handleImageChange(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -23,29 +25,23 @@
     }
   }
 
-  function toggleAddForm() {
-    showAddForm = !showAddForm;
-    if (showAddForm) {
-      showEditForm = false;
-      editingItem = null;
-    }
+  function openAddModal() {
+    showAddModal = true;
+    imagePreview = null;
   }
 
-  function startEdit(item: any) {
+  function closeAddModal() {
+    showAddModal = false;
+  }
+
+  function openEditModal(item: any) {
     editingItem = { ...item };
     imagePreview = item.image;
-    showEditForm = true;
-    showAddForm = false;
-    // Scroll to the edit form
-    setTimeout(() => {
-      document
-        .getElementById("edit-form")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
+    showEditModal = true;
   }
 
-  function cancelEdit() {
-    showEditForm = false;
+  function closeEditModal() {
+    showEditModal = false;
     editingItem = null;
     imagePreview = null;
   }
@@ -57,10 +53,20 @@
   function cancelDelete() {
     confirmDeleteId = null;
   }
+
+  $: filteredItems = data.menuItems.filter(item => {
+    const matchesSearch = searchTerm === "" || 
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = filterCategory === "" || item.category === filterCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 </script>
 
 <div class="min-h-screen bg-stone-50 py-8 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-5xl mx-auto">
+  <div class="max-w-6xl mx-auto">
     <!-- Header with navigation -->
     <div
       class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4"
@@ -83,10 +89,10 @@
           Logout
         </a>
         <button
-          on:click={toggleAddForm}
+          on:click={openAddModal}
           class="px-4 py-2 bg-stone-800 text-white rounded-md shadow-sm hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 text-sm transition-colors"
         >
-          {showAddForm ? "Cancel" : "+ Add Item"}
+          + Add Item
         </button>
       </div>
     </div>
@@ -132,12 +138,353 @@
       </div>
     {/if}
 
-    <!-- Add Form -->
-    {#if showAddForm}
+    <!-- Search and Filter -->
+    <div class="mb-6 flex flex-col sm:flex-row gap-4">
+      <div class="relative flex-1">
+        <input
+          type="text"
+          placeholder="Search menu items..."
+          bind:value={searchTerm}
+          class="w-full px-4 py-2 pl-10 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-stone-500 focus:border-stone-500 text-stone-800"
+        />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 absolute left-3 top-2.5 text-stone-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+      </div>
+      <div class="w-full sm:w-48">
+        <select
+          bind:value={filterCategory}
+          class="w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-stone-500 focus:border-stone-500 text-stone-800"
+        >
+          <option value="">All Categories</option>
+          {#each categories as category}
+            <option value={category}>{category}</option>
+          {/each}
+        </select>
+      </div>
+    </div>
+
+    <!-- Menu Items Table -->
+    <div
+      class="bg-white shadow-md rounded-lg border border-stone-200 overflow-hidden"
+    >
       <div
-        class="bg-white shadow-md rounded-lg p-6 mb-8 border border-stone-200"
+        class="px-6 py-4 border-b border-stone-200 flex justify-between items-center"
       >
-        <h3 class="text-xl font-medium text-stone-800 mb-4 flex items-center">
+        <h2 class="text-xl font-medium text-stone-800">Menu Items</h2>
+        <div class="text-sm text-stone-500">
+          {filteredItems.length} of {data.menuItems.length} items
+        </div>
+      </div>
+
+      {#if data.menuItems.length === 0}
+        <div class="p-8 text-center text-stone-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-12 w-12 mx-auto text-stone-300 mb-3"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+          <p>No menu items found. Add your first item to get started.</p>
+          <button
+            on:click={openAddModal}
+            class="mt-4 px-4 py-2 bg-stone-800 text-white rounded-md shadow-sm hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 text-sm transition-colors"
+          >
+            + Add Item
+          </button>
+        </div>
+      {:else if filteredItems.length === 0}
+        <div class="p-8 text-center text-stone-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-12 w-12 mx-auto text-stone-300 mb-3"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p>No items match your search criteria.</p>
+          <button
+            on:click={() => { searchTerm = ""; filterCategory = ""; }}
+            class="mt-4 px-4 py-2 border border-stone-300 text-stone-700 rounded-md shadow-sm hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 text-sm transition-colors"
+          >
+            Clear Filters
+          </button>
+        </div>
+      {:else}
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-stone-200">
+            <thead class="bg-stone-50">
+              <tr>
+                <th
+                  scope="col"
+                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
+                  >Item</th
+                >
+                <th
+                  scope="col"
+                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
+                  >Price</th
+                >
+                <th
+                  scope="col"
+                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
+                  >Category</th
+                >
+                <th
+                  scope="col"
+                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
+                  >Page</th
+                >
+                <th
+                  scope="col"
+                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
+                  >Status</th
+                >
+                <th
+                  scope="col"
+                  class="px-6 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider"
+                  >Actions</th
+                >
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-stone-200">
+              {#each filteredItems as item}
+                <tr class={item.outOfStock ? "bg-stone-50" : ""}>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center">
+                      <div class="h-12 w-12 flex-shrink-0">
+                        {#if item.image}
+                          <img
+                            src={item.image || "/placeholder.svg"}
+                            alt={item.name}
+                            class="h-12 w-12 object-cover rounded-md border border-stone-200"
+                          />
+                        {:else}
+                          <div
+                            class="h-12 w-12 bg-stone-100 rounded-md flex items-center justify-center text-stone-400"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-6 w-6"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                          </div>
+                        {/if}
+                      </div>
+                      <div class="ml-4">
+                        <div
+                          class="text-sm font-medium text-stone-800 {item.outOfStock
+                            ? 'line-through opacity-70'
+                            : ''}"
+                        >
+                          {item.name}
+                        </div>
+                        <div class="text-xs text-stone-500 truncate max-w-xs">
+                          {item.description}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td
+                    class="px-6 py-4 text-sm text-stone-500 {item.outOfStock
+                      ? 'line-through opacity-70'
+                      : ''}">₹{item.price.toFixed(2)}</td
+                  >
+                  <td class="px-6 py-4">
+                    <span
+                      class="px-2 py-1 text-xs rounded-full bg-stone-100 text-stone-800"
+                    >
+                      {item.category}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-stone-500"
+                    >{item.pageNumber}</td
+                  >
+                  <td class="px-6 py-4">
+                    <span
+                      class={`px-2 py-1 text-xs rounded-full ${item.outOfStock ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
+                    >
+                      {item.outOfStock ? "Out of Stock" : "Available"}
+                    </span>
+                  </td>
+                  <td
+                    class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap"
+                  >
+                    <div class="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        on:click={() => openEditModal(item)}
+                        class="text-blue-600 hover:text-blue-900 hover:bg-blue-50 p-1 rounded transition-colors"
+                        title="Edit item"
+                        aria-label="Edit item"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                      </button>
+
+                      <form
+                        method="POST"
+                        action="?/toggleStock"
+                        class="inline-block"
+                        use:enhance
+                      >
+                        <input type="hidden" name="id" value={item.id} />
+                        <button
+                          type="submit"
+                          class={`hover:bg-${item.outOfStock ? "green" : "amber"}-50 p-1 rounded transition-colors ${item.outOfStock ? "text-green-600 hover:text-green-900" : "text-amber-600 hover:text-amber-900"}`}
+                          title={item.outOfStock
+                            ? "Mark as available"
+                            : "Mark as out of stock"}
+                        >
+                          {#if item.outOfStock}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          {:else}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                              />
+                            </svg>
+                          {/if}
+                        </button>
+                      </form>
+
+                      {#if confirmDeleteId === item.id}
+                        <div
+                          class="absolute right-16 mt-1 bg-white shadow-lg rounded-md border border-stone-200 p-3 z-10"
+                        >
+                          <p class="text-sm text-stone-700 mb-2">
+                            Delete this item?
+                          </p>
+                          <div class="flex gap-2">
+                            <button
+                              type="button"
+                              on:click={cancelDelete}
+                              class="px-2 py-1 text-xs border border-stone-300 text-stone-700 rounded hover:bg-stone-100"
+                            >
+                              Cancel
+                            </button>
+                            <form method="POST" action="?/delete" use:enhance>
+                              <input type="hidden" name="id" value={item.id} />
+                              <button
+                                type="submit"
+                                class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                              >
+                                Delete
+                              </button>
+                            </form>
+                          </div>
+                        </div>
+                      {/if}
+
+                      <button
+                        type="button"
+                        on:click={() => confirmDelete(item.id)}
+                        class="text-red-600 hover:text-red-900 hover:bg-red-50 p-1 rounded transition-colors"
+                        title="Delete item"
+                        aria-label="Delete item"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      {/if}
+    </div>
+  </div>
+</div>
+
+<!-- Add Modal -->
+{#if showAddModal}
+  <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-stone-200 flex justify-between items-center">
+        <h3 class="text-xl font-medium text-stone-800 flex items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-5 w-5 mr-2 text-stone-600"
@@ -152,10 +499,29 @@
           </svg>
           Add New Menu Item
         </h3>
+        <button 
+          on:click={closeAddModal}
+          class="text-stone-500 hover:text-stone-700"
+          aria-label="Close modal"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <div class="p-6">
         <form
           method="POST"
           action="?/add"
-          use:enhance
+          use:enhance={({ formElement, action, cancel }) => {
+            return async ({ result, update }) => {
+              if (result.type === 'success') {
+                closeAddModal();
+              }
+              await update();
+            };
+          }}
           enctype="multipart/form-data"
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
@@ -279,10 +645,10 @@
             </div>
           </div>
 
-          <div class="flex justify-end gap-3">
+          <div class="flex justify-end gap-3 pt-4 border-t border-stone-200">
             <button
               type="button"
-              on:click={toggleAddForm}
+              on:click={closeAddModal}
               class="px-4 py-2 border border-stone-300 text-stone-700 rounded-md shadow-sm hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 text-sm transition-colors"
             >
               Cancel
@@ -296,15 +662,16 @@
           </div>
         </form>
       </div>
-    {/if}
+    </div>
+  </div>
+{/if}
 
-    <!-- Edit Form -->
-    {#if showEditForm && editingItem}
-      <div
-        id="edit-form"
-        class="bg-white shadow-md rounded-lg p-6 mb-8 border border-stone-200"
-      >
-        <h3 class="text-xl font-medium text-stone-800 mb-4 flex items-center">
+<!-- Edit Modal -->
+{#if showEditModal && editingItem}
+  <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-stone-200 flex justify-between items-center">
+        <h3 class="text-xl font-medium text-stone-800 flex items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-5 w-5 mr-2 text-stone-600"
@@ -317,10 +684,29 @@
           </svg>
           Edit Menu Item
         </h3>
+        <button 
+          on:click={closeEditModal}
+          class="text-stone-500 hover:text-stone-700"
+          aria-label="Close modal"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <div class="p-6">
         <form
           method="POST"
           action="?/edit"
-          use:enhance
+          use:enhance={({ formElement, action, cancel }) => {
+            return async ({ result, update }) => {
+              if (result.type === 'success') {
+                closeEditModal();
+              }
+              await update();
+            };
+          }}
           enctype="multipart/form-data"
         >
           <input type="hidden" name="id" value={editingItem.id} />
@@ -456,10 +842,10 @@
             </div>
           </div>
 
-          <div class="flex justify-end gap-3">
+          <div class="flex justify-end gap-3 pt-4 border-t border-stone-200">
             <button
               type="button"
-              on:click={cancelEdit}
+              on:click={closeEditModal}
               class="px-4 py-2 border border-stone-300 text-stone-700 rounded-md shadow-sm hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 text-sm transition-colors"
             >
               Cancel
@@ -473,282 +859,7 @@
           </div>
         </form>
       </div>
-    {/if}
-
-    <!-- Menu Items Table -->
-    <div
-      class="bg-white shadow-md rounded-lg border border-stone-200 overflow-hidden"
-    >
-      <div
-        class="px-6 py-4 border-b border-stone-200 flex justify-between items-center"
-      >
-        <h2 class="text-xl font-medium text-stone-800">Menu Items</h2>
-        <div class="text-sm text-stone-500">{data.menuItems.length} items</div>
-      </div>
-
-      {#if data.menuItems.length === 0}
-        <div class="p-8 text-center text-stone-500">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-12 w-12 mx-auto text-stone-300 mb-3"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
-          <p>No menu items found. Add your first item to get started.</p>
-          <button
-            on:click={toggleAddForm}
-            class="mt-4 px-4 py-2 bg-stone-800 text-white rounded-md shadow-sm hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 text-sm transition-colors"
-          >
-            + Add Item
-          </button>
-        </div>
-      {:else}
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-stone-200">
-            <thead class="bg-stone-50">
-              <tr>
-                <th
-                  scope="col"
-                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
-                  >Item</th
-                >
-                <th
-                  scope="col"
-                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
-                  >Price</th
-                >
-                <th
-                  scope="col"
-                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
-                  >Category</th
-                >
-                <th
-                  scope="col"
-                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
-                  >Page</th
-                >
-                <th
-                  scope="col"
-                  class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider"
-                  >Status</th
-                >
-                <th
-                  scope="col"
-                  class="px-6 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider"
-                  >Actions</th
-                >
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-stone-200">
-              {#each data.menuItems as item}
-                <tr class={item.outOfStock ? "bg-stone-50" : ""}>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center">
-                      <div class="h-12 w-12 flex-shrink-0">
-                        {#if item.image}
-                          <img
-                            src={item.image || "/placeholder.svg"}
-                            alt={item.name}
-                            class="h-12 w-12 object-cover rounded-md border border-stone-200"
-                          />
-                        {:else}
-                          <div
-                            class="h-12 w-12 bg-stone-100 rounded-md flex items-center justify-center text-stone-400"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-6 w-6"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.5"
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                              />
-                            </svg>
-                          </div>
-                        {/if}
-                      </div>
-                      <div class="ml-4">
-                        <div
-                          class="text-sm font-medium text-stone-800 {item.outOfStock
-                            ? 'line-through opacity-70'
-                            : ''}"
-                        >
-                          {item.name}
-                        </div>
-                        <div class="text-xs text-stone-500 truncate max-w-xs">
-                          {item.description}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td
-                    class="px-6 py-4 text-sm text-stone-500 {item.outOfStock
-                      ? 'line-through opacity-70'
-                      : ''}">₹{item.price.toFixed(2)}</td
-                  >
-                  <td class="px-6 py-4">
-                    <span
-                      class="px-2 py-1 text-xs rounded-full bg-stone-100 text-stone-800"
-                    >
-                      {item.category}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 text-sm text-stone-500"
-                    >{item.pageNumber}</td
-                  >
-                  <td class="px-6 py-4">
-                    <span
-                      class={`px-2 py-1 text-xs rounded-full ${item.outOfStock ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
-                    >
-                      {item.outOfStock ? "Out of Stock" : "Available"}
-                    </span>
-                  </td>
-                  <td
-                    class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap"
-                  >
-                    <div class="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        on:click={() => startEdit(item)}
-                        class="text-blue-600 hover:text-blue-900 hover:bg-blue-50 p-1 rounded transition-colors"
-                        title="Edit item"
-                        aria-label="Edit item"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-
-                      <form
-                        method="POST"
-                        action="?/toggleStock"
-                        class="inline-block"
-                        use:enhance
-                      >
-                        <input type="hidden" name="id" value={item.id} />
-                        <button
-                          type="submit"
-                          class={`hover:bg-${item.outOfStock ? "green" : "amber"}-50 p-1 rounded transition-colors ${item.outOfStock ? "text-green-600 hover:text-green-900" : "text-amber-600 hover:text-amber-900"}`}
-                          title={item.outOfStock
-                            ? "Mark as available"
-                            : "Mark as out of stock"}
-                        >
-                          {#if item.outOfStock}
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          {:else}
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                              />
-                            </svg>
-                          {/if}
-                        </button>
-                      </form>
-
-                      {#if confirmDeleteId === item.id}
-                        <div
-                          class="absolute right-16 mt-1 bg-white shadow-lg rounded-md border border-stone-200 p-3 z-10"
-                        >
-                          <p class="text-sm text-stone-700 mb-2">
-                            Delete this item?
-                          </p>
-                          <div class="flex gap-2">
-                            <button
-                              type="button"
-                              on:click={cancelDelete}
-                              class="px-2 py-1 text-xs border border-stone-300 text-stone-700 rounded hover:bg-stone-100"
-                            >
-                              Cancel
-                            </button>
-                            <form method="POST" action="?/delete" use:enhance>
-                              <input type="hidden" name="id" value={item.id} />
-                              <button
-                                type="submit"
-                                class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                              >
-                                Delete
-                              </button>
-                            </form>
-                          </div>
-                        </div>
-                      {/if}
-
-                      <button
-                        type="button"
-                        on:click={() => confirmDelete(item.id)}
-                        class="text-red-600 hover:text-red-900 hover:bg-red-50 p-1 rounded transition-colors"
-                        title="Delete item"
-                        aria-label="Delete item"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {/if}
     </div>
   </div>
-</div>
+{/if}
+
