@@ -34,7 +34,7 @@
   
   <!-- Favicon and Apple Touch Icons -->
   <link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72x72.png" />
-  <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/icons/icon-48x48.png" />
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   
   <!-- Open Graph and Twitter Tags -->
