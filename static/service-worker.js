@@ -5,7 +5,6 @@ const CACHE_NAME = 'timepass-cafe-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json',
-  '/app.css',
   // Add other important assets here
   // You can also cache fonts, images, etc.
 ];
