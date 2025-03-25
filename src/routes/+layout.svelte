@@ -4,18 +4,18 @@
 	
 	let { children } = $props();
 	
-	onMount(() => {
-	  // Register service worker
-	  if ('serviceWorker' in navigator) {
-	    navigator.serviceWorker.register('/service-worker.js')
-	      .then(registration => {
-	        console.log('Service Worker registered with scope:', registration.scope);
-	      })
-	      .catch(error => {
-	        console.error('Service Worker registration failed:', error);
-	      });
-	  }
-	});
+  // onMount(() => {
+  //   // Register service worker
+  //   if ('serviceWorker' in navigator) {
+  //     navigator.serviceWorker.register('/service-worker.js')
+  //       .then(registration => {
+  //         console.log('Service Worker registered with scope:', registration.scope);
+  //       })
+  //       .catch(error => {
+  //         console.error('Service Worker registration failed:', error);
+  //       });
+  //   }
+  // });
 </script>
 
 <svelte:head>
@@ -33,8 +33,8 @@
   <link rel="manifest" href="/manifest.json" />
   
   <!-- Favicon and Apple Touch Icons -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72x72.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48x48.png" />
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   
   <!-- Open Graph and Twitter Tags -->
